@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EatingNotes</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 1em;
+      max-width: 500px;
+      margin: auto;
+      background: #f9f9f9;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    input, select, button {
+      box-sizing: border-box;
+      width: 100%;
+      padding: 0.5em;
+      margin: 0.5em 0;
+      font-size: 1em;
+    }
+
+    .section-title {
+      font-weight: bold;
+      margin-top: 1.5em;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 0.3em;
+    }
+
+    .record-category {
+      margin: 1em 0;
+      padding: 0.5em;
+      background: #fff;
+      border-radius: 5px;
+      box-shadow: 0 0 3px rgba(0,0,0,0.1);
+    }
+
+    .record-category h3 {
+      margin-top: 0;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 0.9em;
+      color: #888;
+      margin-top: 2em;
+    }
+  </style>
+</head>
+<body>
+  <h1>🍲 EatingNotes</h1>
+
+  <label for="goal">今日总热量</label>
+  <input type="number" id="goal" placeholder="例如 2000" />
+
+  <label for="food">选择食物</label>
+  <select id="food">
+    <option value="">-- 请选择 --</option>
+    <!-- 预设选项后续JS加入 -->
+  </select>
+
+  <label for="quantity">数量</label>
+  <input type="number" id="quantity" placeholder="例如 2" />
+
+  <label for="category">分类</label>
+  <select id="category">
+    <option value="早餐">早餐</option>
+    <option value="午餐">午餐</option>
+    <option value="晚餐">晚餐</option>
+    <option value="零食">零食</option>
+  </select>
+
+  <p><strong>已吃：</strong> <span id="totalCalories">0</span> / <span id="goalCalories">0</span></p>
+  <p><strong>剩余：</strong> <span id="remainingCalories">0</span> cal</p>
+
+  <label for="datePicker">选择日期</label>
+  <input type="date" id="datePicker" />
+
+  <div class="record-category" id="breakfast">
+    <h3>🍳 早餐</h3>
+    <ul id="breakfastList"></ul>
+  </div>
+
+  <div class="record-category" id="lunch">
+    <h3>🥗 午餐</h3>
+    <ul id="lunchList"></ul>
+  </div>
+
+  <div class="record-category" id="dinner">
+    <h3>🍛 晚餐</h3>
+    <ul id="dinnerList"></ul>
+  </div>
+
+  <div class="record-category" id="snack">
+    <h3>🥤 零食</h3>
+    <ul id="snackList"></ul>
+  </div>
+
+  <script>
+    // 自动设置今天为默认日期
+    const dateInput = document.getElementById("datePicker");
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    dateInput.value = `${yyyy}-${mm}-${dd}`;
+  </script>
+</body>
+</html>
