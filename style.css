@@ -73,4 +73,21 @@ input[type="date"] {
   border: 1px solid #ccc;
   border-radius: 5px;
 }
+
+.inline-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.inline-group label {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.inline-group input[type="date"] {
+  flex: 1;
+  margin-top: 0; /* 去掉上边距对齐问题 */
+}
+
   
