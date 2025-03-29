@@ -8,9 +8,8 @@
   <!-- 样式文件 -->
   <link rel="stylesheet" href="style.css" />
 
-  <!-- flatpickr 日期选择器样式和脚本 -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <!-- flatpickr 日期选择器样式 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
 </head>
 <body>
   <h1>🍲 EatingNotes</h1>
@@ -64,33 +63,34 @@
     <ul id="snackList"></ul>
   </div>
 
+  <!-- flatpickr 的 JS 放在最后，确保 DOM 全部加载完 -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
   <script>
-    // 初始化 flatpickr 日期选择器
-    flatpickr("#datePicker", {
-      dateFormat: "Y-m-d",
-      defaultDate: new Date()
-    });
+    // 等待页面完全加载后再初始化 flatpickr
+    window.addEventListener("DOMContentLoaded", () => {
+      flatpickr("#datePicker", {
+        dateFormat: "Y-m-d",
+        defaultDate: new Date()
+      });
 
-    // 设置目标热量逻辑
-    const goalInput = document.getElementById("goal");
-    const goalDisplay = document.getElementById("goalCalories");
+      // 设置目标热量逻辑
+      const goalInput = document.getElementById("goal");
+      const goalDisplay = document.getElementById("goalCalories");
 
-    // 页面加载时从 localStorage 获取保存的目标热量
-    window.addEventListener("load", () => {
       const savedGoal = localStorage.getItem("defaultGoalCalories");
       if (savedGoal) {
         goalInput.value = savedGoal;
         goalDisplay.textContent = savedGoal;
       }
-    });
 
-    // 用户输入目标热量时，保存到 localStorage
-    goalInput.addEventListener("input", () => {
-      const val = parseInt(goalInput.value);
-      if (!isNaN(val) && val > 0) {
-        localStorage.setItem("defaultGoalCalories", val);
-        goalDisplay.textContent = val;
-      }
+      goalInput.addEventListener("input", () => {
+        const val = parseInt(goalInput.value);
+        if (!isNaN(val) && val > 0) {
+          localStorage.setItem("defaultGoalCalories", val);
+          goalDisplay.textContent = val;
+        }
+      });
     });
   </script>
 </body>
