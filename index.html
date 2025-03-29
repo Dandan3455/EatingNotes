@@ -5,18 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>EatingNotes</title>
 
-  <!-- 样式文件 -->
+  <!-- ✅ 引入你自己的样式 -->
   <link rel="stylesheet" href="style.css" />
 
-  <!-- flatpickr 日期选择器样式 -->
+  <!-- ✅ flatpickr 样式（确保在 style.css 后引入） -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
 </head>
 <body>
   <h1>🍲 EatingNotes</h1>
 
+  <!-- ✅ 日期输入框必须是 type="text"，这样样式才统一 -->
   <label for="datePicker">📅 选择日期</label>
   <input type="text" id="datePicker" placeholder="选择日期" />
 
+  <!-- 其他输入框保持不变 ✅ -->
   <label for="goal">🎯 今日目标热量 (cal)</label>
   <input type="number" id="goal" placeholder="例如 2000" />
 
@@ -39,10 +41,11 @@
 
   <button id="addBtn">➕ 添加食物</button>
 
+  <!-- ✅ 热量统计展示区域 -->
   <p><strong>已吃：</strong> <span id="totalCalories">0</span> / <span id="goalCalories">0</span> cal</p>
   <p><strong>剩余：</strong> <span id="remainingCalories">0</span> cal</p>
 
-  <!-- 食物记录展示区域 -->
+  <!-- ✅ 食物记录展示区域 -->
   <div class="record-category" id="breakfast">
     <h3>🍳 早餐</h3>
     <ul id="breakfastList"></ul>
@@ -63,18 +66,20 @@
     <ul id="snackList"></ul>
   </div>
 
-  <!-- flatpickr 的 JS 放在最后，确保 DOM 全部加载完 -->
+  <!-- ✅ 引入 flatpickr 的 JS（放在 body 最后，确保页面先加载） -->
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
+  <!-- ✅ 初始化 flatpickr 和保存目标热量的 JS -->
   <script>
-    // 等待页面完全加载后再初始化 flatpickr
+    // 页面加载完后初始化逻辑
     window.addEventListener("DOMContentLoaded", () => {
+      // ✅ 初始化 flatpickr 日期选择器
       flatpickr("#datePicker", {
         dateFormat: "Y-m-d",
         defaultDate: new Date()
       });
 
-      // 设置目标热量逻辑
+      // ✅ 处理目标热量的 localStorage 存取
       const goalInput = document.getElementById("goal");
       const goalDisplay = document.getElementById("goalCalories");
 
