@@ -83,6 +83,8 @@ input[type="date"] {
 .inline-group label {
   margin: 0;
   white-space: nowrap;
+  font-size: 0.95em; /* ➕ 加这一行让它和其他 label 一致 */
+  font-weight: bold; /* ➕ 也加上加粗，不然字体粗细也不统一 */
 }
 
 .inline-group input[type="date"] {
