@@ -10,7 +10,7 @@
   <h1>🍲 EatingNotes</h1>
 
   <label for="datePicker">📅 选择日期</label>
-  <input type="date" id="datePicker" />
+  <input type="text" id="datePicker" placeholder="选择日期" />
 
   <label for="goal">🎯 今日目标热量 (cal)</label>
   <input type="number" id="goal" placeholder="例如 2000" />
@@ -59,13 +59,29 @@
   </div>
 
   <script>
-    // 自动设定今天为默认日期
+    // 日期输入框逻辑（模拟 date 类型）
     const dateInput = document.getElementById("datePicker");
+
+    // 初始化为今天
     const today = new Date();
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth() + 1).padStart(2, '0');
     const dd = String(today.getDate()).padStart(2, '0');
-    dateInput.value = `${yyyy}-${mm}-${dd}`;
+    const todayStr = `${yyyy}-${mm}-${dd}`;
+    dateInput.value = todayStr;
+
+    // 点击输入框时临时切换为 date 类型
+    dateInput.addEventListener("focus", () => {
+      dateInput.type = "date";
+      dateInput.showPicker && dateInput.showPicker(); // 有些浏览器支持直接弹出选择器
+    });
+
+    // 失焦时切换回 text 类型（为了样式统一）
+    dateInput.addEventListener("blur", () => {
+      if (!dateInput.value) {
+        dateInput.type = "text";
+      }
+    });
 
     // 设置目标热量逻辑
     const goalInput = document.getElementById("goal");
