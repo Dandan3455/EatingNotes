@@ -65,4 +65,12 @@ body {
     color: #888;
     margin-top: 2em;
   }
+
+input[type="date"] {
+  width: 100%;
+  font-size: 1em;
+  padding: 0.6em;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
   
