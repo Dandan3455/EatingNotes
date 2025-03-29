@@ -4,7 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>EatingNotes</title>
+
+  <!-- 样式文件 -->
   <link rel="stylesheet" href="style.css" />
+
+  <!-- flatpickr 日期选择器样式和脚本 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 <body>
   <h1>🍲 EatingNotes</h1>
@@ -59,28 +65,10 @@
   </div>
 
   <script>
-    // 日期输入框逻辑（模拟 date 类型）
-    const dateInput = document.getElementById("datePicker");
-
-    // 初始化为今天
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    const todayStr = `${yyyy}-${mm}-${dd}`;
-    dateInput.value = todayStr;
-
-    // 点击输入框时临时切换为 date 类型
-    dateInput.addEventListener("focus", () => {
-      dateInput.type = "date";
-      dateInput.showPicker && dateInput.showPicker(); // 有些浏览器支持直接弹出选择器
-    });
-
-    // 失焦时切换回 text 类型（为了样式统一）
-    dateInput.addEventListener("blur", () => {
-      if (!dateInput.value) {
-        dateInput.type = "text";
-      }
+    // 初始化 flatpickr 日期选择器
+    flatpickr("#datePicker", {
+      dateFormat: "Y-m-d",
+      defaultDate: new Date()
     });
 
     // 设置目标热量逻辑
