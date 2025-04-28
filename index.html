@@ -60,36 +60,93 @@
     <ul id="snackList"></ul>
   </div>
 
-  <script>
-    // 自动设定今天为默认日期
-    const dateInput = document.getElementById("datePicker");
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    dateInput.value = `${yyyy}-${mm}-${dd}`;
+  <script type="module">
+import { fetchRecords, saveRecords, fetchMeta, saveMeta }
+  from './storageService.js';
 
-    // 设置目标热量逻辑
-    const goalInput = document.getElementById("goal");
-    const goalDisplay = document.getElementById("goalCalories");
+// —— DOM 引用 —— 
+const dateInput   = document.getElementById("datePicker");
+const goalInput   = document.getElementById("goal");
+const goalDisplay = document.getElementById("goalCalories");
+const weightInput = document.getElementById("weight");
+const foodInput   = document.getElementById("food");
+const qtyInput    = document.getElementById("quantity");
+const calInput    = document.getElementById("calories"); // 如果已添加
+const catSelect   = document.getElementById("category");
+const addBtn      = document.getElementById("addBtn");
+const totalEl     = document.getElementById("totalCalories");
+const remainEl    = document.getElementById("remainingCalories");
+const lists       = {
+  '早餐': document.getElementById('breakfastList'),
+  '午餐': document.getElementById('lunchList'),
+  '晚餐': document.getElementById('dinnerList'),
+  '零食': document.getElementById('snackList'),
+};
 
-    // 页面加载时从 localStorage 获取保存的目标热量
-    window.addEventListener("load", () => {
-      const savedGoal = localStorage.getItem("defaultGoalCalories");
-      if (savedGoal) {
-        goalInput.value = savedGoal;
-        goalDisplay.textContent = savedGoal;
-      }
-    });
+// —— 初始化日期 & 监听切换 —— 
+const today = new Date();
+dateInput.value = today.toISOString().slice(0,10);
+dateInput.addEventListener('change', () => render(dateInput.value));
 
-    // 用户输入目标热量时，保存到 localStorage
-    goalInput.addEventListener("input", () => {
-      const val = parseInt(goalInput.value);
-      if (!isNaN(val) && val > 0) {
-        localStorage.setItem("defaultGoalCalories", val);
-        goalDisplay.textContent = val;
-      }
-    });
-  </script>
+// —— 载入全局目标热量 —— 
+goalInput.addEventListener('input', async ()=>{
+  const meta = await fetchMeta(dateInput.value);
+  meta.goalCalories = goalInput.value;
+  await saveMeta(dateInput.value, meta);
+  goalDisplay.textContent = goalInput.value;
+  render(dateInput.value);
+});
+
+// —— 体重 保存 & 渲染 —— 
+weightInput.addEventListener('input', async ()=>{
+  const meta = await fetchMeta(dateInput.value);
+  meta.weight = weightInput.value;
+  await saveMeta(dateInput.value, meta);
+});
+
+// —— 添加记录 —— 
+addBtn.addEventListener('click', async ()=>{
+  const food = foodInput.value.trim();
+  const qty  = parseFloat(qtyInput.value);
+  const cal  = parseInt(calInput.value);
+  const cat  = catSelect.value;
+  if (!food || isNaN(qty) || isNaN(cal)) {
+    return alert('请填写「食物」「数量」「热量」三项');
+  }
+  const rec = { id: Date.now(), food, qty, cal, cat };
+  const list = await fetchRecords(dateInput.value);
+  list.push(rec);
+  await saveRecords(dateInput.value, list);
+  foodInput.value = qtyInput.value = calInput.value = '';
+  render(dateInput.value);
+});
+
+// —— 渲染函数 —— 
+async function render(date) {
+  // 载入 Meta
+  const meta = await fetchMeta(date);
+  goalInput.value   = meta.goalCalories || goalInput.value;
+  goalDisplay.textContent = goalInput.value;
+  weightInput.value = meta.weight || '';
+
+  // 载入并渲染记录
+  const records = await fetchRecords(date);
+  Object.values(lists).forEach(ul=> ul.innerHTML = '');
+  let total = 0;
+  records.forEach(rec=>{
+    const lineCal = rec.qty * rec.cal;
+    total += lineCal;
+    const li = document.createElement('li');
+    li.textContent = `${rec.food} ×${rec.qty}，${lineCal} cal`;
+    lists[rec.cat].appendChild(li);
+  });
+  totalEl.textContent  = total;
+  remainEl.textContent = Math.max((parseInt(goalInput.value)||0) - total, 0);
+}
+
+// —— 页面首次载入 —— 
+window.addEventListener('load', () => render(dateInput.value));
+</script>
+
 </body>
 </html>
