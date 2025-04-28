@@ -130,7 +130,7 @@
     await saveMeta(date, meta);
   });
 
-  // —— 添加食物记录 —— 
+  // —— 添加食物记录 + 同步到食物库 —— 
   addBtn.addEventListener('click', async () => {
     const date = dateInput.value;
     const food = foodInput.value.trim();
@@ -140,6 +140,13 @@
     if (!food || isNaN(qty) || isNaN(cal)) {
       return alert('请填写「食物」「数量」「热量」三项');
     }
+    // 如果库中不存在，则同步添加
+    const existing = (await getAllFoods()).some(f => f.name === food);
+    if (!existing) {
+      await addFood({ name: food, cal });
+      await reloadFoodList();
+    }
+    // 添加到当天记录
     const rec = { id: Date.now(), food, qty, cal, cat };
     const list = await fetchRecords(date);
     list.push(rec);
