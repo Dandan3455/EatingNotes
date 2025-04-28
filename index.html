@@ -10,9 +10,9 @@
   <h1>🍲 EatingNotes</h1>
 
   <div class="inline-group">
-  <label for="datePicker">📅 选择日期</label>
-  <input type="date" id="datePicker" />
-</div>
+    <label for="datePicker">📅 选择日期</label>
+    <input type="date" id="datePicker" />
+  </div>
 
   <label for="goal">🎯 今日目标热量 (cal)</label>
   <input type="number" id="goal" placeholder="例如 2000" />
@@ -26,6 +26,9 @@
   <label for="quantity">🔢 数量</label>
   <input type="number" id="quantity" placeholder="例如 2" />
 
+  <label for="calories">⚡️ 热量 (per 份，cal)</label>
+  <input type="number" id="calories" placeholder="例如 78" />
+
   <label for="category">📂 分类</label>
   <select id="category">
     <option value="早餐">🍳 早餐</option>
@@ -36,117 +39,117 @@
 
   <button id="addBtn">➕ 添加食物</button>
 
-  <p><strong>已吃：</strong> <span id="totalCalories">0</span> / <span id="goalCalories">0</span> cal</p>
+  <p><strong>已吃：</strong> <span id="totalCalories">0</span> / 
+     <span id="goalCalories">0</span> cal</p>
   <p><strong>剩余：</strong> <span id="remainingCalories">0</span> cal</p>
 
-  <!-- 食物记录展示区域 -->
-  <div class="record-category" id="breakfast">
+  <div class="record-category">
     <h3>🍳 早餐</h3>
     <ul id="breakfastList"></ul>
   </div>
-
-  <div class="record-category" id="lunch">
+  <div class="record-category">
     <h3>🥗 午餐</h3>
     <ul id="lunchList"></ul>
   </div>
-
-  <div class="record-category" id="dinner">
+  <div class="record-category">
     <h3>🍛 晚餐</h3>
     <ul id="dinnerList"></ul>
   </div>
-
-  <div class="record-category" id="snack">
+  <div class="record-category">
     <h3>🥤 零食</h3>
     <ul id="snackList"></ul>
   </div>
 
   <script type="module">
-import { fetchRecords, saveRecords, fetchMeta, saveMeta }
-  from './storageService.js';
+  import {
+    fetchRecords, saveRecords,
+    fetchMeta,    saveMeta
+  } from './storageService.js';
 
-// —— DOM 引用 —— 
-const dateInput   = document.getElementById("datePicker");
-const goalInput   = document.getElementById("goal");
-const goalDisplay = document.getElementById("goalCalories");
-const weightInput = document.getElementById("weight");
-const foodInput   = document.getElementById("food");
-const qtyInput    = document.getElementById("quantity");
-const calInput    = document.getElementById("calories"); // 如果已添加
-const catSelect   = document.getElementById("category");
-const addBtn      = document.getElementById("addBtn");
-const totalEl     = document.getElementById("totalCalories");
-const remainEl    = document.getElementById("remainingCalories");
-const lists       = {
-  '早餐': document.getElementById('breakfastList'),
-  '午餐': document.getElementById('lunchList'),
-  '晚餐': document.getElementById('dinnerList'),
-  '零食': document.getElementById('snackList'),
-};
+  // —— DOM 引用 —— 
+  const dateInput   = document.getElementById("datePicker");
+  const goalInput   = document.getElementById("goal");
+  const goalDisplay = document.getElementById("goalCalories");
+  const weightInput = document.getElementById("weight");
+  const foodInput   = document.getElementById("food");
+  const qtyInput    = document.getElementById("quantity");
+  const calInput    = document.getElementById("calories");
+  const catSelect   = document.getElementById("category");
+  const addBtn      = document.getElementById("addBtn");
+  const totalEl     = document.getElementById("totalCalories");
+  const remainEl    = document.getElementById("remainingCalories");
+  const lists       = {
+    '早餐': document.getElementById('breakfastList'),
+    '午餐': document.getElementById('lunchList'),
+    '晚餐': document.getElementById('dinnerList'),
+    '零食': document.getElementById('snackList'),
+  };
 
-// —— 初始化日期 & 监听切换 —— 
-const today = new Date();
-dateInput.value = today.toISOString().slice(0,10);
-dateInput.addEventListener('change', () => render(dateInput.value));
+  // —— 初始化日期 & 首次渲染 —— 
+  dateInput.value = new Date().toISOString().slice(0,10);
+  window.addEventListener('load', () => renderRecords(dateInput.value));
+  dateInput.addEventListener('change', () => renderRecords(dateInput.value));
 
-// —— 载入全局目标热量 —— 
-goalInput.addEventListener('input', async ()=>{
-  const meta = await fetchMeta(dateInput.value);
-  meta.goalCalories = goalInput.value;
-  await saveMeta(dateInput.value, meta);
-  goalDisplay.textContent = goalInput.value;
-  render(dateInput.value);
-});
-
-// —— 体重 保存 & 渲染 —— 
-weightInput.addEventListener('input', async ()=>{
-  const meta = await fetchMeta(dateInput.value);
-  meta.weight = weightInput.value;
-  await saveMeta(dateInput.value, meta);
-});
-
-// —— 添加记录 —— 
-addBtn.addEventListener('click', async ()=>{
-  const food = foodInput.value.trim();
-  const qty  = parseFloat(qtyInput.value);
-  const cal  = parseInt(calInput.value);
-  const cat  = catSelect.value;
-  if (!food || isNaN(qty) || isNaN(cal)) {
-    return alert('请填写「食物」「数量」「热量」三项');
-  }
-  const rec = { id: Date.now(), food, qty, cal, cat };
-  const list = await fetchRecords(dateInput.value);
-  list.push(rec);
-  await saveRecords(dateInput.value, list);
-  foodInput.value = qtyInput.value = calInput.value = '';
-  render(dateInput.value);
-});
-
-// —— 渲染函数 —— 
-async function render(date) {
-  // 载入 Meta
-  const meta = await fetchMeta(date);
-  goalInput.value   = meta.goalCalories || goalInput.value;
-  goalDisplay.textContent = goalInput.value;
-  weightInput.value = meta.weight || '';
-
-  // 载入并渲染记录
-  const records = await fetchRecords(date);
-  Object.values(lists).forEach(ul=> ul.innerHTML = '');
-  let total = 0;
-  records.forEach(rec=>{
-    const lineCal = rec.qty * rec.cal;
-    total += lineCal;
-    const li = document.createElement('li');
-    li.textContent = `${rec.food} ×${rec.qty}，${lineCal} cal`;
-    lists[rec.cat].appendChild(li);
+  // —— 保存 & 渲染 目标热量 —— 
+  goalInput.addEventListener('input', async () => {
+    const date = dateInput.value;
+    const meta = await fetchMeta(date);
+    meta.goalCalories = goalInput.value;
+    await saveMeta(date, meta);
+    goalDisplay.textContent = goalInput.value;
+    renderRecords(date);
   });
-  totalEl.textContent  = total;
-  remainEl.textContent = Math.max((parseInt(goalInput.value)||0) - total, 0);
-}
 
-// —— 页面首次载入 —— 
-window.addEventListener('load', () => render(dateInput.value));
-</script>
+  // —— 保存 体重 —— 
+  weightInput.addEventListener('input', async () => {
+    const date = dateInput.value;
+    const meta = await fetchMeta(date);
+    meta.weight = weightInput.value;
+    await saveMeta(date, meta);
+  });
 
+  // —— 添加食物记录 —— 
+  addBtn.addEventListener('click', async () => {
+    const date = dateInput.value;
+    const food = foodInput.value.trim();
+    const qty  = parseFloat(qtyInput.value);
+    const cal  = parseInt(calInput.value);
+    const cat  = catSelect.value;
+    if (!food || isNaN(qty) || isNaN(cal)) {
+      return alert('请填写「食物」「数量」「热量」三项');
+    }
+    const rec = { id: Date.now(), food, qty, cal, cat };
+    const list = await fetchRecords(date);
+    list.push(rec);
+    await saveRecords(date, list);
+    foodInput.value = qtyInput.value = calInput.value = '';
+    renderRecords(date);
+  });
+
+  // —— 渲染函数 —— 
+  async function renderRecords(date) {
+    // 1. 载入 meta
+    const meta = await fetchMeta(date);
+    goalInput.value       = meta.goalCalories || goalInput.value;
+    goalDisplay.textContent = goalInput.value;
+    weightInput.value     = meta.weight || '';
+
+    // 2. 载入并渲染记录
+    const records = await fetchRecords(date);
+    Object.values(lists).forEach(ul => ul.innerHTML = '');
+    let total = 0;
+    for (const rec of records) {
+      const lineCal = rec.qty * rec.cal;
+      total += lineCal;
+      const li = document.createElement('li');
+      li.textContent = `${rec.food} ×${rec.qty}，${lineCal} cal`;
+      lists[rec.cat].appendChild(li);
+    }
+
+    // 3. 更新统计
+    totalEl.textContent  = total;
+    remainEl.textContent = Math.max((parseInt(goalInput.value)||0) - total, 0);
+  }
+  </script>
 </body>
 </html>
