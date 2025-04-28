@@ -21,7 +21,8 @@
   <input type="number" id="weight" placeholder="例如 57.5" step="0.1" />
 
   <label for="food">🍽️ 食物</label>
-  <input type="text" id="food" placeholder="例如 煮鸡蛋" />
+  <input type="text" id="food" list="foodList" placeholder="例如 水煮蛋" />
+  <datalist id="foodList"></datalist>
 
   <label for="quantity">🔢 数量</label>
   <input type="number" id="quantity" placeholder="例如 2" />
@@ -39,8 +40,7 @@
 
   <button id="addBtn">➕ 添加食物</button>
 
-  <p><strong>已吃：</strong> <span id="totalCalories">0</span> / 
-     <span id="goalCalories">0</span> cal</p>
+  <p><strong>已吃：</strong> <span id="totalCalories">0</span> / <span id="goalCalories">0</span> cal</p>
   <p><strong>剩余：</strong> <span id="remainingCalories">0</span> cal</p>
 
   <div class="record-category">
@@ -61,23 +61,21 @@
   </div>
 
   <script type="module">
-  import {
-    fetchRecords, saveRecords,
-    fetchMeta,    saveMeta
-  } from './storageService.js';
+  import { fetchRecords, saveRecords, fetchMeta, saveMeta } from './storageService.js';
+  import { getAllFoods, addFood } from './foodLibraryService.js';
 
   // —— DOM 引用 —— 
-  const dateInput   = document.getElementById("datePicker");
-  const goalInput   = document.getElementById("goal");
-  const goalDisplay = document.getElementById("goalCalories");
-  const weightInput = document.getElementById("weight");
-  const foodInput   = document.getElementById("food");
-  const qtyInput    = document.getElementById("quantity");
-  const calInput    = document.getElementById("calories");
-  const catSelect   = document.getElementById("category");
-  const addBtn      = document.getElementById("addBtn");
-  const totalEl     = document.getElementById("totalCalories");
-  const remainEl    = document.getElementById("remainingCalories");
+  const dateInput   = document.getElementById('datePicker');
+  const goalInput   = document.getElementById('goal');
+  const goalDisplay = document.getElementById('goalCalories');
+  const weightInput = document.getElementById('weight');
+  const foodInput   = document.getElementById('food');
+  const qtyInput    = document.getElementById('quantity');
+  const calInput    = document.getElementById('calories');
+  const catSelect   = document.getElementById('category');
+  const addBtn      = document.getElementById('addBtn');
+  const totalEl     = document.getElementById('totalCalories');
+  const remainEl    = document.getElementById('remainingCalories');
   const lists       = {
     '早餐': document.getElementById('breakfastList'),
     '午餐': document.getElementById('lunchList'),
@@ -85,10 +83,34 @@
     '零食': document.getElementById('snackList'),
   };
 
-  // —— 初始化日期 & 首次渲染 —— 
-  dateInput.value = new Date().toISOString().slice(0,10);
-  window.addEventListener('load', () => renderRecords(dateInput.value));
-  dateInput.addEventListener('change', () => renderRecords(dateInput.value));
+  // —— datalist 填充与自动填热量 —— 
+  async function reloadFoodList() {
+    const list = await getAllFoods();
+    const dl   = document.getElementById('foodList');
+    dl.innerHTML = '';
+    list.forEach(item => {
+      const opt = document.createElement('option');
+      opt.value = item.name;
+      dl.appendChild(opt);
+    });
+  }
+  foodInput.addEventListener('change', async () => {
+    const name = foodInput.value.trim();
+    if (!name) return;
+    const match = (await getAllFoods()).find(f => f.name === name);
+    if (match) calInput.value = match.cal;
+  });
+
+  // —— 初始化 & 首次渲染 —— 
+  window.addEventListener('load', async () => {
+    await reloadFoodList();
+    dateInput.value = new Date().toISOString().slice(0,10);
+    renderRecords(dateInput.value);
+  });
+  dateInput.addEventListener('change', async () => {
+    await reloadFoodList();
+    renderRecords(dateInput.value);
+  });
 
   // —— 保存 & 渲染 目标热量 —— 
   goalInput.addEventListener('input', async () => {
@@ -128,13 +150,11 @@
 
   // —— 渲染函数 —— 
   async function renderRecords(date) {
-    // 1. 载入 meta
-    const meta = await fetchMeta(date);
+    const meta    = await fetchMeta(date);
     goalInput.value       = meta.goalCalories || goalInput.value;
     goalDisplay.textContent = goalInput.value;
     weightInput.value     = meta.weight || '';
 
-    // 2. 载入并渲染记录
     const records = await fetchRecords(date);
     Object.values(lists).forEach(ul => ul.innerHTML = '');
     let total = 0;
@@ -146,7 +166,6 @@
       lists[rec.cat].appendChild(li);
     }
 
-    // 3. 更新统计
     totalEl.textContent  = total;
     remainEl.textContent = Math.max((parseInt(goalInput.value)||0) - total, 0);
   }
