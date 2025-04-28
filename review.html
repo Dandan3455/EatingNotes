@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>待审核食物列表</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>📝 待审核食物</h1>
+  <p>请审核用户提交的食物，将其加入主库或拒绝。</p>
+  <ul id="pendingList"></ul>
+
+  <script type="module">
+  import { getPendingFoods, removePendingFood } from './pendingFoodService.js';
+  import { addFood } from './foodLibraryService.js';
+
+  const listEl = document.getElementById('pendingList');
+
+  // 渲染待审核列表
+  async function renderPending() {
+    const items = await getPendingFoods();
+    listEl.innerHTML = '';
+    if (items.length === 0) {
+      listEl.innerHTML = '<li>目前没有待审核条目</li>';
+      return;
+    }
+    items.forEach(item => {
+      const li = document.createElement('li');
+      li.textContent = `${item.name} — ${item.cal} cal `;
+      // 通过按钮
+      const ok = document.createElement('button');
+      ok.textContent = '通过';
+      ok.addEventListener('click', async () => {
+        await addFood(item);
+        await removePendingFood(item.name);
+        renderPending();
+        alert(`已将 ${item.name} 加入主食物库`);
+      });
+      // 拒绝按钮
+      const reject = document.createElement('button');
+      reject.textContent = '拒绝';
+      reject.addEventListener('click', async () => {
+        await removePendingFood(item.name);
+        renderPending();
+        alert(`已拒绝 ${item.name}`);
+      });
+      li.appendChild(ok);
+      li.appendChild(reject);
+      listEl.appendChild(li);
+    });
+  }
+
+  // 页面加载时渲染
+  window.addEventListener('load', renderPending);
+  </script>
+</body>
+</html>
