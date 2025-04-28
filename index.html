@@ -62,7 +62,8 @@
 
   <script type="module">
   import { fetchRecords, saveRecords, fetchMeta, saveMeta } from './storageService.js';
-  import { getAllFoods, addFood } from './foodLibraryService.js';
+  import { getAllFoods } from './foodLibraryService.js';
+  import { addPendingFood } from './pendingFoodService.js';
 
   // —— DOM 引用 —— 
   const dateInput   = document.getElementById('datePicker');
@@ -83,9 +84,9 @@
     '零食': document.getElementById('snackList'),
   };
 
-  // —— datalist 填充与自动填热量 —— 
+  // —— datalist 填充 —— 
   async function reloadFoodList() {
-    const list = await getAllFoods();
+    const list = await getAllFoods(); // 只显示已审核主库
     const dl   = document.getElementById('foodList');
     dl.innerHTML = '';
     list.forEach(item => {
@@ -130,7 +131,7 @@
     await saveMeta(date, meta);
   });
 
-  // —— 添加食物记录 + 同步到食物库 —— 
+  // —— 添加食物记录 + 待审核 —— 
   addBtn.addEventListener('click', async () => {
     const date = dateInput.value;
     const food = foodInput.value.trim();
@@ -140,11 +141,11 @@
     if (!food || isNaN(qty) || isNaN(cal)) {
       return alert('请填写「食物」「数量」「热量」三项');
     }
-    // 如果库中不存在，则同步添加
-    const existing = (await getAllFoods()).some(f => f.name === food);
-    if (!existing) {
-      await addFood({ name: food, cal });
-      await reloadFoodList();
+    const approvedList = await getAllFoods();
+    const existsApproved = approvedList.some(f => f.name === food);
+    if (!existsApproved) {
+      await addPendingFood({ name: food, cal });
+      alert('新食物已提交审核，通过后将显示在下拉列表中');
     }
     // 添加到当天记录
     const rec = { id: Date.now(), food, qty, cal, cat };
